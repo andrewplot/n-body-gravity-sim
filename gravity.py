@@ -9,7 +9,7 @@ for t in range(1000000):
 
 #constant decl
 M = 1
-Dt = 0.01
+Dt = 0.05
 g = 9.81
 G = 6.674e-11
 N = 1000
@@ -20,11 +20,12 @@ x_max = y_max = 100
 mass = [M] * N
 vel = [0] * N
 pos = [[0,0]] * N
+pos = np.array(pos) #needed to allow subtracting lists for r_ij
+
 
 #pos decl
 for i in range(N):
     pos[i] = [random.uniform(x_min, x_max), random.uniform(y_min, y_max)]
-pos = np.array(pos) #needed to allow subtracting lists for r_ij
 
 
 #acceleration computations via newton's law; sums individual accel contributions
@@ -32,10 +33,13 @@ accel = [[0,0]] * N
 
 for i in range(N):
     for j in range(N):
+        if i == j: #skips on itself
+            continue
+
         r_ij = pos[j] - pos[i]
         r_mag = np.linalg.norm(r_ij)
 
-        if r_mag == 0: #skips on itself and other coincident points
+        if r_mag == 0: #skips other coincident points
             continue
 
         a_ij = G * mass[j] * r_ij / (r_mag ** 3)
@@ -44,7 +48,7 @@ for i in range(N):
 print(pos)
 print(accel)
 
-#rk4 step
+#rk4
 
 
 
