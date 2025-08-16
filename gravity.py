@@ -1,10 +1,13 @@
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 import random
 import time
+import keyboard
 
 #constant declarations
 G = 6.674e-11
-N = 10
+N = 25
 M = 1
 dt = 0.05
 g = 9.81
@@ -14,7 +17,7 @@ mass = [M] * N
 x_min = y_min = -100
 x_max = y_max = 100
 
-def initialize_pos(pos: list, x_min: int, x_max: int, y_min: int, y_max: int):
+def initialize_pos(pos: list):
     for i in range(N):
         pos[i] = [random.uniform(x_min, x_max), random.uniform(y_min, y_max)]
     return pos
@@ -69,8 +72,6 @@ def runge_kutta4(pos, vel, accel):
 
     return pos, vel
 
-
-
 def main():
     #runtime start
     start = time.time()
@@ -83,7 +84,8 @@ def main():
     pos = np.array(pos) #needed to allow subtracting lists for r_ij
     accel = np.zeros((N,2), dtype=float)
 
-    pos = initialize_pos(pos, x_min, x_max, y_min, y_max)
+    #initialize coords and plot
+    pos = initialize_pos(pos)
 
     while True:
         #calculate accelerations (newton's law, summing individual accel contributions)
@@ -97,10 +99,15 @@ def main():
         print(pos)
         print(vel)
         print(accel)
-        break
+
+        #exit condition
+        if keyboard.is_pressed('q'):
+            break    
+        
 
 
-#maybe add leapfrog and have it overlay, depicting tradeoff between energy conservation and accuracy in long run
+#maybe add leapfrog and have it overlay, depicting tradeoff between energy conservation and accuracy in long run; other options: rkn4, forest-ruth, etc.
+#optimizations: gpu (mac: pytorch with MPS), fast multipole methods, barnes-hut
 
     #runtime end
     end = time.time()
