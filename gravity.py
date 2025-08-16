@@ -3,13 +3,13 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import random
 import time
-import keyboard
+# import keyboard #for exit condition; cant get to work
 
 #constant declarations
 G = 6.674e-11
-N = 25
-M = 1
-dt = 0.05
+N = 2
+M = 10000
+dt = 1
 g = 9.81
 mass = [M] * N
 
@@ -72,6 +72,14 @@ def runge_kutta4(pos, vel, accel):
 
     return pos, vel
 
+def animate(frame, pos, vel, accel):
+    #calculate accelerations (newton's law, summing individual accel contributions)
+    for i in range(N):
+        accel[i] = calc_accel(i, pos)
+
+    #rk4
+    pos, vel = runge_kutta4(pos, vel, accel)
+
 def main():
     #runtime start
     start = time.time()
@@ -86,33 +94,23 @@ def main():
 
     #initialize coords and plot
     pos = initialize_pos(pos)
+    fig, ax = plt.subplots(figsize=(10, 10))
+    ax.set_xlim(x_min, x_max)
+    ax.set_ylim(y_min, y_max)
+    ax.set_aspect('equal')
+    scat = ax.scatter(pos[:, 0], pos[:, 1], s=50, c='blue')
 
-    while True:
-        #calculate accelerations (newton's law, summing individual accel contributions)
-        for i in range(N):
-            accel[i] = calc_accel(i, pos)
+    #animation
+    animation = FuncAnimation(fig, animate, fargs=(pos, vel, accel), frames=100, interval=50, blit=False)
+    plt.show()
 
-        #rk4
-        pos, vel = runge_kutta4(pos, vel, accel)
-
-        #ui
-        print(pos)
-        print(vel)
-        print(accel)
-
-        #exit condition
-        if keyboard.is_pressed('q'):
-            break    
-        
-
-
-#maybe add leapfrog and have it overlay, depicting tradeoff between energy conservation and accuracy in long run; other options: rkn4, forest-ruth, etc.
-#optimizations: gpu (mac: pytorch with MPS), fast multipole methods, barnes-hut
-
-    #runtime end
+    # runtime end
     end = time.time()
     print("Runtime:", end-start, "s")
     return 0
 
 if __name__ == "__main__":
     main()
+
+#maybe add leapfrog and have it overlay, depicting tradeoff between energy conservation and accuracy in long run; other options: rkn4, forest-ruth, etc.
+#optimizations: gpu (mac: pytorch with MPS), fast multipole methods, barnes-hut
