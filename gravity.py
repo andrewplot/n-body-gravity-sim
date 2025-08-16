@@ -45,21 +45,27 @@ def runge_kutta4(pos, vel, accel):
     k4_pos = np.zeros((N, 2), dtype=float)
     k4_vel = np.zeros((N, 2), dtype=float)
 
+    #k2
+    temp_pos = pos + (dt/2) * k1_pos
     for i in range(N):
-        temp_pos = pos[i] + (dt/2) * k1_pos[i]
         k2_pos[i] = vel[i] + (dt/2) * k1_vel[i]
-        k2_vel[i] = calc_accel(i, pos, temp_pos) 
-        
-        temp_pos = pos[i] + (dt/2) * k2_pos[i]
+        k2_vel[i] = calc_accel(i, temp_pos, temp_pos[i])
+    
+    #k3    
+    temp_pos = pos + (dt/2) * k2_pos
+    for i in range(N):
         k3_pos[i] = vel[i] + (dt/2) * k2_vel[i]
-        k3_vel[i] = calc_accel(i, pos, temp_pos)
-
-        temp_pos = pos[i] + dt * k3_pos[i]
+        k3_vel[i] = calc_accel(i, pos, temp_pos[i])
+    
+    #k4
+    temp_pos = pos + dt * k3_pos
+    for i in range(N):
         k4_pos[i] = vel[i] + dt * k3_vel[i]
-        k4_vel[i] = calc_accel(i, pos, temp_pos)
-        
-        pos[i] += (dt/6) * (k1_pos + 2*k2_pos + 2*k3_pos + k4_pos)
-        vel[i] += (dt/6) * (k1_vel + 2*k2_vel + 2*k3_vel + k4_vel)
+        k4_vel[i] = calc_accel(i, pos, temp_pos[i])
+
+    #update    
+    pos += (dt/6) * (k1_pos + 2*k2_pos + 2*k3_pos + k4_pos)
+    vel += (dt/6) * (k1_vel + 2*k2_vel + 2*k3_vel + k4_vel)
 
     return pos, vel
 
