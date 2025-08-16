@@ -2,6 +2,9 @@ import numpy as np
 import random
 import time
 
+def calcAccel():
+    return
+
 #runtime code
 start = time.time()
 for t in range(1000000):
@@ -59,16 +62,20 @@ k4_pos = [0] * N
 k4_vel = [0] * N
 
 for i in range(N):
-    k2_pos[i] = 
-    k2_vel[i] = 
-    k3_pos[i] = 
-    k3_vel[i] = 
-    k4_pos[i] = 
-    k4_vel[i] = 
-    
-    pos[i] += 
-    vel[i] += 
+    temp_pos = pos[i] + (dt/2) * k1_pos[i]
+    k2_pos[i] = vel[i] + (dt/2) * k1_vel[i]
+    k2_vel[i] = calcAccel(temp_pos) 
 
+    temp_pos = pos[i] + (dt/2) * k2_pos[i]
+    k3_pos[i] = vel[i] + (dt/2) * k2_vel[i]
+    k3_vel[i] = calcAccel(temp_pos)
+
+    temp_pos = pos[i] + dt * k3_pos[i]
+    k4_pos[i] = vel + dt * k3_vel
+    k4_vel[i] = calcAccel(temp_pos)
+    
+    pos[i] += (dt/6) * (k1_pos + 2*k2_pos + 2*k3_pos + k4_pos)
+    vel[i] += (dt/6) * (k1_vel + 2*k2_vel + 2*k3_vel + k4_vel)
 
 #ui
 
