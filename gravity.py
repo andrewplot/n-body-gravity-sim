@@ -19,14 +19,14 @@ def initialize_pos(pos: list, x_min: int, x_max: int, y_min: int, y_max: int):
         pos[i] = [random.uniform(x_min, x_max), random.uniform(y_min, y_max)]
     return pos
 
-def calc_accel(i, pos: list, curr_pos: float):
+def calc_accel(i: int, pos: list):
     acceleration = np.array([0.0, 0.0])
 
     for j in range(N):
-        if np.all(curr_pos == pos[j]): #skips on itself
+        if i == j: #skips on itself
             continue
 
-        r_ij = pos[j] - curr_pos
+        r_ij = pos[j] - pos[i]
         r_mag = np.linalg.norm(r_ij)
         
         if r_mag == 0: #skips other coincident points
@@ -49,19 +49,19 @@ def runge_kutta4(pos, vel, accel):
     temp_pos = pos + (dt/2) * k1_pos
     for i in range(N):
         k2_pos[i] = vel[i] + (dt/2) * k1_vel[i]
-        k2_vel[i] = calc_accel(i, temp_pos, temp_pos[i])
+        k2_vel[i] = calc_accel(i, temp_pos)
     
     #k3    
     temp_pos = pos + (dt/2) * k2_pos
     for i in range(N):
         k3_pos[i] = vel[i] + (dt/2) * k2_vel[i]
-        k3_vel[i] = calc_accel(i, pos, temp_pos[i])
+        k3_vel[i] = calc_accel(i, pos)
     
     #k4
     temp_pos = pos + dt * k3_pos
     for i in range(N):
         k4_pos[i] = vel[i] + dt * k3_vel[i]
-        k4_vel[i] = calc_accel(i, pos, temp_pos[i])
+        k4_vel[i] = calc_accel(i, pos)
 
     #update    
     pos += (dt/6) * (k1_pos + 2*k2_pos + 2*k3_pos + k4_pos)
@@ -88,7 +88,7 @@ def main():
     while True:
         #calculate accelerations (newton's law, summing individual accel contributions)
         for i in range(N):
-            accel[i] = calc_accel(i, pos, pos[i])
+            accel[i] = calc_accel(i, pos)
 
         #rk4
         pos, vel = runge_kutta4(pos, vel, accel)
