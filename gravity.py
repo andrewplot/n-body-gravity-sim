@@ -9,16 +9,16 @@ for t in range(1000000):
 
 #constant decl
 M = 1
-Dt = 0.05
+dt = 0.05
 g = 9.81
 G = 6.674e-11
-N = 1000
+N = 10
 x_min = y_min = -100
 x_max = y_max = 100
 
 #arr decl
 mass = [M] * N
-vel = [0] * N
+vel = [[0,0]] * N
 pos = [[0,0]] * N
 pos = np.array(pos) #needed to allow subtracting lists for r_ij
 
@@ -49,8 +49,32 @@ print(pos)
 print(accel)
 
 #rk4
+k1_pos = vel
+k1_vel = accel
+k2_pos = [0] * N
+k2_vel = [0] * N
+k3_pos = [0] * N
+k3_vel = [0] * N
+k4_pos = [0] * N
+k4_vel = [0] * N
+
+for i in range(N):
+    k2_pos[i] = 
+    k2_vel[i] = 
+    k3_pos[i] = 
+    k3_vel[i] = 
+    k4_pos[i] = 
+    k4_vel[i] = 
+    
+    pos[i] += 
+    vel[i] += 
 
 
+#ui
+
+
+
+#maybe add leapfrog and have it overlay, depicting tradeoff between energy conservation and accuracy in long run
 
 
 
