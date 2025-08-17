@@ -7,9 +7,9 @@ import time
 
 #constant declarations
 G = 6.674e-11
-N = 2
-M = 10000
-dt = 1
+N = 20
+M = 10000000
+dt = 30
 g = 9.81
 mass = [M] * N
 
@@ -72,13 +72,19 @@ def runge_kutta4(pos, vel, accel):
 
     return pos, vel
 
-def animate(frame, pos, vel, accel):
+def animate(frame, pos, vel, accel, scat):
     #calculate accelerations (newton's law, summing individual accel contributions)
     for i in range(N):
         accel[i] = calc_accel(i, pos)
 
     #rk4
     pos, vel = runge_kutta4(pos, vel, accel)
+
+    #update
+    scat.set_offsets(pos)
+
+    return scat,
+
 
 def main():
     #runtime start
@@ -94,14 +100,14 @@ def main():
 
     #initialize coords and plot
     pos = initialize_pos(pos)
-    fig, ax = plt.subplots(figsize=(10, 10))
-    ax.set_xlim(x_min, x_max)
-    ax.set_ylim(y_min, y_max)
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax.set_xlim(x_min*3, x_max*3)
+    ax.set_ylim(y_min*3, y_max*3)
     ax.set_aspect('equal')
-    scat = ax.scatter(pos[:, 0], pos[:, 1], s=50, c='blue')
+    scat = ax.scatter(pos[:, 0], pos[:, 1], s=2, c='blue')
 
     #animation
-    animation = FuncAnimation(fig, animate, fargs=(pos, vel, accel), frames=100, interval=50, blit=False)
+    animation = FuncAnimation(fig, animate, fargs=(pos, vel, accel, scat), frames=100, interval=50, blit=False)
     plt.show()
 
     # runtime end
