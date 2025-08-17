@@ -11,7 +11,9 @@ N = 20
 M = 10000000
 dt = 30
 g = 9.81
+epsilon = 1e-10 #helps with not approaching infinity
 mass = [M] * N
+#mass = [100 * M] + [M] * (N - 1)
 
 
 x_min = y_min = -100
@@ -34,7 +36,8 @@ def calc_accel(i: int, pos: list):
         
         if r_mag == 0: #skips other coincident points
             continue
-        a_ij = G * mass[j] * r_ij / (r_mag ** 3)
+        #a_ij = G * mass[j] * r_ij / (r_mag ** 3)                       #correct formula
+        a_ij = G * mass[j] * r_ij / ((r_mag**2 + epsilon**2) ** 1.5)    #formula w epsilon to prevent diverging force
         acceleration += a_ij
     return acceleration
 
