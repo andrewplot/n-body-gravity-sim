@@ -7,22 +7,89 @@ import time
 
 #constant declarations
 G = 6.674e-11
-N = 20
+N = 50
 M = 10000000
-dt = 30
+dt = 0.001
 g = 9.81
-epsilon = 1e-10 #helps with not approaching infinity
-mass = [M] * N
-#mass = [100 * M] + [M] * (N - 1)
-
+epsilon = 1e-1 #helps with not approaching infinity
+mass = np.full(N, M)
 
 x_min = y_min = -100
 x_max = y_max = 100
 
-def initialize_pos(pos: list):
+def get_user_input():
+    while True:
+        user_input = input("1 for random, 2 for plummer sphere: ")
+
+        try:
+            user_input = int(user_input)
+            if user_input in [1,2]:
+                return user_input
+            else:
+                print("Err: Invalid input")
+        except ValueError:
+            print("Err: NaN input")
+
+
+def randomize_pos(pos: list):
     for i in range(N):
         pos[i] = [random.uniform(x_min, x_max), random.uniform(y_min, y_max)]
     return pos
+
+def plummer_sphere_pos(pos: list, vel: list):
+    a = 10.0  # scale radius (characteristic size of the cluster)
+    total_mass = N * M  # total mass of the system
+    
+    #pos = plummer sphere density profile
+    for i in range(N):
+        # Generate random radius using inverse transform sampling
+        # For Plummer sphere: M(r) = M_total * r^3 / (r^2 + a^2)^(3/2)
+        # Solving for r given a random cumulative mass fraction
+        xi = random.random()  # random number between 0 and 1
+        r = a / np.sqrt((xi**(-2/3) - 1))
+        
+        # Generate random angles for spherical coordinates
+        theta = np.arccos(2 * random.random() - 1)  # uniform in cos(theta)
+        phi = 2 * np.pi * random.random()  # uniform in phi
+        
+        # Convert to Cartesian coordinates
+        x = r * np.sin(theta) * np.cos(phi)
+        y = r * np.sin(theta) * np.sin(phi)
+        
+        pos[i] = [x, y]
+    
+    #vel = virial theorem and escape vel
+    for i in range(N):
+        r_i = np.linalg.norm(pos[i])
+        
+        # Calculate enclosed mass at radius r_i
+        M_enc = total_mass * (r_i**3) / (r_i**2 + a**2)**(3/2)
+        
+        # Escape velocity at this radius
+        v_esc = np.sqrt(2 * G * M_enc / r_i) if r_i > 0 else 0
+        
+        # Velocity magnitude (typically fraction of escape velocity for bound system)
+        # Using King's approximation for velocity distribution
+        v_mag = v_esc * random.uniform(0.1, 0.7)  # bound velocities
+        
+        # Random velocity direction
+        v_theta = 2 * np.pi * random.random()
+        v_x = v_mag * np.cos(v_theta)
+        v_y = v_mag * np.sin(v_theta)
+        
+        vel[i] = [v_x, v_y]
+    
+
+    
+    # Center of mass correction (ensure system doesn't drift)
+    com_pos = np.mean(pos, axis=0)
+    com_vel = np.mean(vel, axis=0)
+    
+    for i in range(N):
+        pos[i] = pos[i] - com_pos
+        vel[i] = vel[i] - com_vel
+    
+    return pos, vel
 
 def calc_accel(i: int, pos: list):
     acceleration = np.array([0.0, 0.0])
@@ -75,7 +142,7 @@ def runge_kutta4(pos, vel, accel):
 
     return pos, vel
 
-def animate(frame, pos, vel, accel, scat):
+def animate(frame, pos, vel, accel, scat, start):
     #calculate accelerations (newton's law, summing individual accel contributions)
     for i in range(N):
         accel[i] = calc_accel(i, pos)
@@ -85,13 +152,18 @@ def animate(frame, pos, vel, accel, scat):
 
     #update
     scat.set_offsets(pos)
+    
+    end = time.time()
+    print(f"Frametime: {end-start[0]:.18f} s")
+    start[0] = time.time()
 
-    return scat,
+    return scat
 
 
 def main():
     #runtime start
-    start = time.time()
+    start = [time.time(), time.time()] #[frame_time, run_time]
+
     for t in range(1000000):
         x = t**2
 
@@ -101,25 +173,33 @@ def main():
     pos = np.array(pos) #needed to allow subtracting lists for r_ij
     accel = np.zeros((N,2), dtype=float)
 
-    #initialize coords and plot
-    pos = initialize_pos(pos)
+    #initialize coords
+    algo_choice = 2 # = get_user_input()
+
+    if algo_choice == 1:
+        pos = randomize_pos(pos)
+    else: 
+        pos, vel = plummer_sphere_pos(pos, vel)
+
+    #initialize plot
     fig, ax = plt.subplots(figsize=(5, 5))
-    ax.set_xlim(x_min*3, x_max*3)
-    ax.set_ylim(y_min*3, y_max*3)
+    ax.set_xlim(x_min*2, x_max*2)
+    ax.set_ylim(y_min*2, y_max*2)
     ax.set_aspect('equal')
     scat = ax.scatter(pos[:, 0], pos[:, 1], s=2, c='blue')
 
     #animation
-    animation = FuncAnimation(fig, animate, fargs=(pos, vel, accel, scat), frames=100, interval=50, blit=False)
+    animation = FuncAnimation(fig, animate, fargs=(pos, vel, accel, scat, start), frames=100, interval=50, blit=False)
     plt.show()
 
     # runtime end
     end = time.time()
-    print("Runtime:", end-start, "s")
+    print(f"Runtime:   {end-start[1]:.18f} s")
     return 0
 
 if __name__ == "__main__":
     main()
 
 #maybe add leapfrog and have it overlay, depicting tradeoff between energy conservation and accuracy in long run; other options: rkn4, forest-ruth, etc.
+#make all units real
 #optimizations: gpu (mac: pytorch with MPS), fast multipole methods, barnes-hut
