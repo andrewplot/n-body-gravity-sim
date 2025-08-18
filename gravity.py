@@ -95,7 +95,7 @@ def total_energy(mass, vel, pos):
     #kinetic
     kinetic = 0
     for i in range(N):
-        kinetic += 0.5 * mass[i] * (vel[i] ** 2)
+        kinetic += 0.5 * mass[i] * (vel[i][0]**2 + vel[i][1]**2)
 
     #potential
     potential = 0
@@ -118,8 +118,8 @@ def calc_accel(i: int, pos: list):
         
         if r_mag == 0: #skips other coincident points
             continue
-        #a_ij = G * mass[j] * r_ij / (r_mag ** 3)                       #correct formula
-        a_ij = G * mass[j] * r_ij / ((r_mag**2 + epsilon**2) ** 1.5)    #formula w epsilon to prevent diverging force
+        a_ij = G * mass[j] * r_ij / (r_mag ** 3)                       #correct formula
+        #a_ij = G * mass[j] * r_ij / ((r_mag**2 + epsilon**2) ** 1.5)    #formula w epsilon to prevent diverging force
         acceleration += a_ij
     return acceleration
 
@@ -157,27 +157,31 @@ def runge_kutta4(pos, vel, accel):
 
     return pos, vel
 
-def animate(frame, pos, vel, accel, scat, start, energy_line, ax_energy):
+def animate(frame, pos, vel, accel, scat, start, energy_data, energy_line, ax_energy):
     #calc accelerations (newton's law, summing individual accel contributions)
     for i in range(N):
         accel[i] = calc_accel(i, pos)
 
-    #rk4 calc
+    #numerical integration
     pos, vel = runge_kutta4(pos, vel, accel)
+    pos, vel = leapfrog(pos, vel, accel)
 
     #energy calc
-    energy = total_energy
+    energy = total_energy(mass, vel, pos)
+    energy_data.append(energy)
 
     #update
     scat.set_offsets(pos)
-    energy_data.append(energy)
-
+    energy_line.set_data(range(len(energy_data)), energy_data)
+    ax_energy.relim()
+    ax_energy.autoscale_view()
+    
     #frametime
     end = time.time()
     print(f"Frametime: {end-start[0]:.18f} s")
     start[0] = time.time()
 
-    return scat
+    return scat, energy_line
 
 
 def main():
@@ -209,6 +213,7 @@ def main():
     scat = ax.scatter(pos[:, 0], pos[:, 1], s=2, c='blue')
 
     #initialize energy plot
+    energy_data = []
     ax_energy.set_title('Total Energy')
     ax_energy.set_xlabel('dt')
     ax_energy.set_ylabel('Energy')
@@ -218,7 +223,7 @@ def main():
 
     #animation
     animation = FuncAnimation(fig, animate, fargs=(pos, vel, accel, 
-                                                   scat, start, 
+                                                   scat, start, energy_data, 
                                                    energy_line, ax_energy), 
                               frames=100, interval=50, blit=False)
     plt.show()
@@ -233,8 +238,9 @@ if __name__ == "__main__":
 
 """
 to do:
-1. fix total_energy
+1. understand total_energy
 2. understand plummer model
+
 3. fix math and exploding to infinity (may require another model)
 4. time to refactor code and maybe separate into files, getting messy
 
