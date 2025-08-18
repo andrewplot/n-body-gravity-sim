@@ -9,7 +9,7 @@ import time
 G = 6.674e-11
 N = 50
 M = 10000000
-dt = 0.001
+dt = 5
 g = 9.81
 epsilon = 1e-1 #helps with not approaching infinity
 mass = np.full(N, M)
@@ -90,6 +90,21 @@ def plummer_sphere_pos(pos: list, vel: list):
         vel[i] = vel[i] - com_vel
     
     return pos, vel
+
+def total_energy(mass, vel, pos):
+    #kinetic
+    kinetic = 0
+    for i in range(N):
+        kinetic += 0.5 * mass[i] * (vel[i] ** 2)
+
+    #potential
+    potential = 0
+    for i in range(N):
+        for j in range(i+1, N):
+            r_ij = np.linalg.norm(pos[i] - pos[j])
+            potential -= G * mass[i] * mass[j] / r_ij
+    
+    return kinetic + potential
 
 def calc_accel(i: int, pos: list):
     acceleration = np.array([0.0, 0.0])
@@ -200,6 +215,7 @@ def main():
 if __name__ == "__main__":
     main()
 
+#add total energy graph
 #maybe add leapfrog and have it overlay, depicting tradeoff between energy conservation and accuracy in long run; other options: rkn4, forest-ruth, etc.
 #make all units real
 #optimizations: gpu (mac: pytorch with MPS), fast multipole methods, barnes-hut
