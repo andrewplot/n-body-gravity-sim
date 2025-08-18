@@ -157,17 +157,22 @@ def runge_kutta4(pos, vel, accel):
 
     return pos, vel
 
-def animate(frame, pos, vel, accel, scat, start):
-    #calculate accelerations (newton's law, summing individual accel contributions)
+def animate(frame, pos, vel, accel, scat, start, energy_line, ax_energy):
+    #calc accelerations (newton's law, summing individual accel contributions)
     for i in range(N):
         accel[i] = calc_accel(i, pos)
 
-    #rk4
+    #rk4 calc
     pos, vel = runge_kutta4(pos, vel, accel)
+
+    #energy calc
+    energy = total_energy
 
     #update
     scat.set_offsets(pos)
-    
+    energy_data.append(energy)
+
+    #frametime
     end = time.time()
     print(f"Frametime: {end-start[0]:.18f} s")
     start[0] = time.time()
@@ -196,15 +201,26 @@ def main():
     else: 
         pos, vel = plummer_sphere_pos(pos, vel)
 
-    #initialize plot
-    fig, ax = plt.subplots(figsize=(5, 5))
+    #initialize main plot
+    fig, (ax, ax_energy) = plt.subplots(2, 1, figsize=(5, 8), height_ratios=[2,1])
     ax.set_xlim(x_min*2, x_max*2)
     ax.set_ylim(y_min*2, y_max*2)
     ax.set_aspect('equal')
     scat = ax.scatter(pos[:, 0], pos[:, 1], s=2, c='blue')
 
+    #initialize energy plot
+    ax_energy.set_title('Total Energy')
+    ax_energy.set_xlabel('dt')
+    ax_energy.set_ylabel('Energy')
+    energy_line, = ax_energy.plot([], [], 'r-')
+
+    plt.tight_layout()
+
     #animation
-    animation = FuncAnimation(fig, animate, fargs=(pos, vel, accel, scat, start), frames=100, interval=50, blit=False)
+    animation = FuncAnimation(fig, animate, fargs=(pos, vel, accel, 
+                                                   scat, start, 
+                                                   energy_line, ax_energy), 
+                              frames=100, interval=50, blit=False)
     plt.show()
 
     # runtime end
@@ -215,7 +231,18 @@ def main():
 if __name__ == "__main__":
     main()
 
-#add total energy graph
-#maybe add leapfrog and have it overlay, depicting tradeoff between energy conservation and accuracy in long run; other options: rkn4, forest-ruth, etc.
-#make all units real
-#optimizations: gpu (mac: pytorch with MPS), fast multipole methods, barnes-hut
+"""
+to do:
+1. fix total_energy
+2. understand plummer model
+3. fix math and exploding to infinity (may require another model)
+4. time to refactor code and maybe separate into files, getting messy
+
+later:
+1. add energy-conserving models: leapfrog, rkn4, or forest-ruth; compare with overlay under rk4
+2. make units real
+3. optimize
+    -gpu (macos: pytorch with MPS)
+    -fast multipole methods (cooked)
+    -barnes-hut (goated but maybe cooked)
+"""
