@@ -118,8 +118,8 @@ def calc_accel(i: int, pos: list):
         
         if r_mag == 0: #skips other coincident points
             continue
-        a_ij = G * mass[j] * r_ij / (r_mag ** 3)                       #correct formula
-        #a_ij = G * mass[j] * r_ij / ((r_mag**2 + epsilon**2) ** 1.5)    #formula w epsilon to prevent diverging force
+        #a_ij = G * mass[j] * r_ij / (r_mag ** 3)                       #correct formula
+        a_ij = G * mass[j] * r_ij / ((r_mag**2 + epsilon**2) ** 1.5)    #formula w epsilon to prevent diverging force
         acceleration += a_ij
     return acceleration
 
@@ -157,13 +157,25 @@ def runge_kutta4(pos, vel, accel):
 
     return pos, vel
 
+def leapfrog(pos, vel, accel):
+    vel += 0.5 * dt * accel
+    pos += dt * vel
+    
+    new_accel = np.zeros((N, 2), dtype=float)
+    for i in range(N):
+        new_accel[i] = calc_accel(i, pos)
+    
+    vel += 0.5 * dt * new_accel
+
+    return pos, vel
+
 def animate(frame, pos, vel, accel, scat, start, energy_data, energy_line, ax_energy):
     #calc accelerations (newton's law, summing individual accel contributions)
     for i in range(N):
         accel[i] = calc_accel(i, pos)
 
     #numerical integration
-    pos, vel = runge_kutta4(pos, vel, accel)
+    #pos, vel = runge_kutta4(pos, vel, accel)
     pos, vel = leapfrog(pos, vel, accel)
 
     #energy calc
@@ -198,7 +210,7 @@ def main():
     accel = np.zeros((N,2), dtype=float)
 
     #initialize coords
-    algo_choice = 2 # = get_user_input()
+    algo_choice = 1 # = get_user_input()
 
     if algo_choice == 1:
         pos = randomize_pos(pos)
@@ -222,7 +234,7 @@ def main():
     plt.tight_layout()
 
     #animation
-    animation = FuncAnimation(fig, animate, fargs=(pos, vel, accel, 
+    animation = FuncAnimation(fig, animate, fargs=(pos, vel, accel,
                                                    scat, start, energy_data, 
                                                    energy_line, ax_energy), 
                               frames=100, interval=50, blit=False)
@@ -245,7 +257,7 @@ to do:
 4. time to refactor code and maybe separate into files, getting messy
 
 later:
-1. add energy-conserving models: leapfrog, rkn4, or forest-ruth; compare with overlay under rk4
+1. add energy-conserving models: leapfrog, symplectic rkn4, or forest-ruth; compare with overlay under rk4
 2. make units real
 3. optimize
     -gpu (macos: pytorch with MPS)
