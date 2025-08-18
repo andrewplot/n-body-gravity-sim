@@ -7,9 +7,9 @@ import time
 
 #constant declarations
 G = 6.674e-11
-N = 50
+N = 500
 M = 10000000
-dt = 5
+dt = 0.1
 g = 9.81
 epsilon = 1e-1 #helps with not approaching infinity
 mass = np.full(N, M)
@@ -175,8 +175,8 @@ def animate(frame, pos, vel, accel, scat, start, energy_data, energy_line, ax_en
         accel[i] = calc_accel(i, pos)
 
     #numerical integration
-    #pos, vel = runge_kutta4(pos, vel, accel)
-    pos, vel = leapfrog(pos, vel, accel)
+    pos, vel = runge_kutta4(pos, vel, accel)
+    #pos, vel = leapfrog(pos, vel, accel)
 
     #energy calc
     energy = total_energy(mass, vel, pos)
