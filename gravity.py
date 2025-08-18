@@ -250,9 +250,9 @@ if __name__ == "__main__":
 
 """
 to do:
+0. fix energy leak, perhaps due to acceleration being passed into animate as 0 list alwayss
 1. understand total_energy
 2. understand plummer model
-
 3. fix math and exploding to infinity (may require another model)
 4. time to refactor code and maybe separate into files, getting messy
 
