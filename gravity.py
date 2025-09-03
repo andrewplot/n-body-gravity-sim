@@ -7,11 +7,11 @@ import time
 
 #constant declarations
 G = 6.674e-11
-N = 500
+N = 50
 M = 10000000
 dt = 0.1
 g = 9.81
-epsilon = 1e-1 #helps with not approaching infinity
+epsilon = 1e-1 #helps with not approaching infinitygit
 mass = np.full(N, M)
 
 x_min = y_min = -100
@@ -250,7 +250,7 @@ if __name__ == "__main__":
 
 """
 to do:
-0. fix energy leak, perhaps due to acceleration being passed into animate as 0 list alwayss
+0. fix energy leak, perhaps due to acceleration being passed into animate as 0 list always
 1. understand total_energy
 2. understand plummer model
 3. fix math and exploding to infinity (may require another model)
