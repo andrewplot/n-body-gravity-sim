@@ -11,7 +11,7 @@ N = 50
 M = 10000000
 dt = 0.1
 g = 9.81
-epsilon = 1e-1 #helps with not approaching infinitygit
+epsilon = 1e-1 #helps with not approaching infinity
 mass = np.full(N, M)
 
 x_min = y_min = -100
@@ -260,7 +260,8 @@ later:
 1. add energy-conserving models: leapfrog, symplectic rkn4, or forest-ruth; compare with overlay under rk4
 2. make units real
 3. optimize
-    -gpu (macos: pytorch with MPS)
+    -gpu (macos: pytorch with MPS) or numba compiler
     -fast multipole methods (cooked)
     -barnes-hut (goated but maybe cooked)
+4. model galaxy collisions
 """
