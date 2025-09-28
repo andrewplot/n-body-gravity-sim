@@ -8,8 +8,8 @@ import time
 #constant declarations
 G = 6.674e-11
 N = 50
-M = 10000000
-dt = 0.1
+M = 40000000
+dt = 0.5
 g = 9.81
 epsilon = 1e-1 #helps with not approaching infinity
 mass = np.full(N, M)
@@ -175,8 +175,8 @@ def animate(frame, pos, vel, accel, scat, start, energy_data, energy_line, ax_en
         accel[i] = calc_accel(i, pos)
 
     #numerical integration
-    pos, vel = runge_kutta4(pos, vel, accel)
-    #pos, vel = leapfrog(pos, vel, accel)
+    #pos, vel = runge_kutta4(pos, vel, accel)
+    pos, vel = leapfrog(pos, vel, accel)
 
     #energy calc
     energy = total_energy(mass, vel, pos)
@@ -210,7 +210,7 @@ def main():
     accel = np.zeros((N,2), dtype=float)
 
     #initialize coords
-    algo_choice = 1 # = get_user_input()
+    algo_choice = 2 # = get_user_input()
 
     if algo_choice == 1:
         pos = randomize_pos(pos)
@@ -265,3 +265,9 @@ later:
     -barnes-hut (goated but maybe cooked)
 4. model galaxy collisions
 """
+
+
+"""
+i want to make this project better, more professional, and the centerpiece for my swe portfoliio. my ideas are: having multiple integration scehemes and comparisons, all while plotting energy conservation for each scheme. this would include adding a toglge in the UI to switch integrators. I would alos like to make it interactive, where you can choose several parameters, with one being the initial condition (plummer sphere, two galaxies colliding, etc.), with pause/resume, reset, and speed controls. I would also like a framerate liek the one I have implemented. I would also like data visualization/analysis, plotting energy drift vs time under the different ingegrators, plotting radial density profile for the plummer initialization, maybe plotting total angular momentum if doing the galaxy collision, etc."""
+
+#hamiltonian system
